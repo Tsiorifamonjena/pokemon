@@ -4,7 +4,7 @@ import type { Pokemon } from "./types";
 export const pokemonApi = createApi({
   reducerPath: "pokemonApi",
   baseQuery: fetchBaseQuery({
-    baseUrl: "https://ng-pokemon-api.herokuapp.com/",
+    baseUrl: process.env.REACT_APP_API,
   }),
   tagTypes: ["Pokemon"],
   endpoints: (builder) => ({
@@ -28,7 +28,31 @@ export const pokemonApi = createApi({
       },
       invalidatesTags: (result, error, id) => [{ type: "Pokemon", id }],
     }),
+    postPokemons: builder.mutation<unknown, Pokemon>({
+      query: (body) => ({
+        url: "pokemons",
+        method: "POST",
+        body,
+      }),
+      invalidatesTags: [{ type: "Pokemon", id: "LIST" }],
+    }),
+    putPokemons: builder.mutation<unknown, Omit<Pokemon, "created">>({
+      query: (data) => {
+        const { id, ...body } = data;
+        return {
+          url: `pokemons/${id}`,
+          method: "PUT",
+          body,
+        };
+      },
+      invalidatesTags: (result, error, { id }) => [{ type: "Pokemon", id }],
+    }),
   }),
 });
 
-export const { useGetPokemonsQuery, useDeletePokemonMutation } = pokemonApi;
+export const {
+  useGetPokemonsQuery,
+  useDeletePokemonMutation,
+  usePostPokemonsMutation,
+  usePutPokemonsMutation,
+} = pokemonApi;

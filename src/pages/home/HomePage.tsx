@@ -1,49 +1,43 @@
 import { Container, Grid, Typography } from "@mui/material";
-import React, { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { useGetPokemonsQuery } from "../../app/services/api/pokemonApi";
-import { Pokemon } from "../../app/services/api/types";
+import React from "react";
+import { useSearchPokemon } from "../../app/services/hooks/useSearchPokemon";
 import withAuthGuard from "../../components/auth/withAuthGuard";
-import PokemonCards from "../../components/cards/PokemonCards";
 import SearchBarInput from "../../components/input/SearchBarInput";
+import PokemonList from "../../components/list/PokemonList";
 import FetchingPokemonListSkeleton from "../../components/skeleton/FetchingPokemonListSkeleton";
+import AddIcon from "@mui/icons-material/Add";
+import Fab from "@mui/material/Fab";
+import { useNavigate } from "react-router-dom";
+
+const fabStyle = {
+  position: "fixed",
+  bottom: 16,
+  right: 16,
+};
 
 const HomePage: React.FC = () => {
-  const { data, isLoading } = useGetPokemonsQuery();
-  const [pokemons, setPokemons] = useState<Pokemon[]>();
+  const { pokemons, isFetching, run } = useSearchPokemon();
   const navigate = useNavigate();
-
-  useEffect(() => {
-    if (data) {
-      setPokemons(data);
-    }
-  }, [data]);
-
-  function searchPokemon() {}
 
   return (
     <Container>
       <Typography variant="h1" textAlign={"center"}>
         Liste pokémons
       </Typography>
-      <SearchBarInput label="Chercher un pokemon" />
+      <SearchBarInput
+        label="Chercher un pokemon"
+        onChange={(value: string) => run(value)}
+      />
       <Grid container spacing={2} sx={{ marginLeft: 10 }}>
-        {isLoading ? (
+        {isFetching ? (
           <FetchingPokemonListSkeleton />
         ) : (
-          pokemons?.map((pokemon) => (
-            <Grid item key={pokemon.id}>
-              <PokemonCards
-                name={pokemon.name}
-                picture={pokemon.picture}
-                types={pokemon.types}
-                createdAt={new Date(pokemon.created)}
-                onClick={() => navigate(`/pokemon/${pokemon.id}`)}
-              />
-            </Grid>
-          ))
+          <PokemonList pokemons={pokemons} />
         )}
       </Grid>
+      <Fab sx={fabStyle} color="primary" onClick={() => navigate("/add")}>
+        {<AddIcon />}
+      </Fab>
     </Container>
   );
 };

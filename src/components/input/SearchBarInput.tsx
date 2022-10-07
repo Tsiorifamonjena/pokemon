@@ -1,10 +1,12 @@
 import { Box, InputAdornment, TextField } from "@mui/material";
+import { debounce } from "@mui/material/utils";
 import React from "react";
 import SearchIcon from "@mui/icons-material/Search";
 
 const SearchBarInput: React.FC<{
   label: string;
-}> = ({ label }) => (
+  onChange: (value: string) => any;
+}> = ({ label, onChange }) => (
   <Box sx={{ marginY: 5 }}>
     <TextField
       fullWidth
@@ -17,6 +19,7 @@ const SearchBarInput: React.FC<{
           </InputAdornment>
         ),
       }}
+      onChange={({ target: { value } }) => debounce(onChange(value), 10000)}
     />
   </Box>
 );

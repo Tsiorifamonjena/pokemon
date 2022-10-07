@@ -7,27 +7,20 @@ import {
 } from "@mui/material";
 import React, { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import {
-  useDeletePokemonMutation,
-  useGetPokemonsQuery,
-} from "../../app/services/api/pokemonApi";
+import { useDeletePokemonMutation } from "../../app/services/api/pokemonApi";
+import { useGetDetailPokemon } from "../../app/services/hooks/useGetDetailPokemon";
 import withAuthGuard from "../../components/auth/withAuthGuard";
 import PokemonDetailCard from "../../components/cards/PokemonDetailCard";
 import DeleteDialog from "../../components/modal/DeleteDialog";
+import UpdatePokemonModal from "../../components/modal/UpdatePokemonModal";
 
 const PokemonDetailPage: React.FC = () => {
   const { pokemonId } = useParams();
-  const { data, isLoading } = useGetPokemonsQuery(undefined, {
-    selectFromResult: ({ data, isLoading }) => {
-      return {
-        data: data?.find((pokemon) => pokemon.id.toString() === pokemonId),
-        isLoading,
-      };
-    },
-  });
+  const { pokemon: data } = useGetDetailPokemon(pokemonId);
   const [openDialog, setOpenDialog] = useState<boolean>(false);
   const navigate = useNavigate();
-  const [deletePokemon, { isLoading: isDeleting }] = useDeletePokemonMutation();
+  const [deletePokemon] = useDeletePokemonMutation();
+  const [showUpdateModal, setShowUpdateModal] = useState<boolean>(false);
 
   async function handleDeletePokemon() {
     if (data && data.id) {
@@ -56,7 +49,9 @@ const PokemonDetailPage: React.FC = () => {
             <Button onClick={goBack} size="small">
               Back
             </Button>
-            <Button size="small">Edit</Button>
+            <Button onClick={() => setShowUpdateModal(true)} size="small">
+              Edit
+            </Button>
             <Button onClick={() => setOpenDialog(true)} size="small">
               Delete
             </Button>
@@ -68,6 +63,13 @@ const PokemonDetailPage: React.FC = () => {
         onClose={() => setOpenDialog(false)}
         onDelete={handleDeletePokemon}
       />
+      {pokemonId && (
+        <UpdatePokemonModal
+          open={showUpdateModal}
+          onClose={() => setShowUpdateModal(false)}
+          pokemonId={pokemonId}
+        />
+      )}
     </Container>
   );
 };
